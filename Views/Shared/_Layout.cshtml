@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] – Автосалон "CarКарыч рулит"</title>
+
+    <!-- Bootstrap + базовые стили -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Тёмная тема (по умолчанию выключена) -->
+    <link id="themeStylesheet"
+          rel="stylesheet"
+          href="~/css/site.dark.css"
+          asp-append-version="true"
+          disabled />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    Автосалон "CarКарыч рулит"
+                </a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mainNav" aria-controls="mainNav"
+                        aria-expanded="false" aria-label="Переключить навигацию">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div id="mainNav" class="collapse navbar-collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Главная</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-controller="Home" asp-action="Privacy">Политика конфиденциальности</a>
+                        </li>
+                        @if (User.Identity.IsAuthenticated /* && (User.IsInRole("1")||User.IsInRole("2")||User.IsInRole("3")) */){                        
+                        <li class="nav-item">
+                                    <a class="nav-link text-dark"
+                                       asp-controller="Review"
+                                       asp-action="Stats">
+                                           Статистика отзывов                                
+                                    </a>                            
+                        </li>
+                        }
+
+                        @* Ссылка на просмотр купленных авто для админа и менеджера *@
+                        @if (User.IsInRole("1") || User.IsInRole("2"))
+                        {
+                        
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Purchase" asp-action="Index">
+                                    Купленные авто                                
+                                </a>                            
+                            </li>
+                        }
+
+                        @if (User.IsInRole("1"))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="User" asp-action="ManageUsers">Управление пользователями</a>
+                            </li>
+                        }
+                    </ul>
+
+                    <button id="themeToggle" class="btn btn-outline-secondary">
+                        🌙 Тёмная тема
+                    </button>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <form asp-controller="User" asp-action="Logout" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger ms-2">Выход</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <a asp-controller="User" asp-action="Login" class="btn btn-primary ms-2">Войти</a>
+                    }
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 – Автосалон "CarКарыч рулит" –
+            <a asp-controller="Home" asp-action="Privacy">Политика конфиденциальности</a>
+        </div>
+    </footer>
+
+    <!-- базовые скрипты -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @* переключатель темы *@
+    <script>
+        (() => {
+            const link = document.getElementById('themeStylesheet');
+            const btn = document.getElementById('themeToggle');
+            const saved = localStorage.getItem('theme');
+            if (saved === 'dark') {
+                link.disabled = false;
+                btn.textContent = '☀️ Светлая тема';
+            }
+            btn.addEventListener('click', () => {
+                if (link.disabled) {
+                    link.disabled = false;
+                    localStorage.setItem('theme', 'dark');
+                    btn.textContent = '☀️ Светлая тема';
+                } else {
+                    link.disabled = true;
+                    localStorage.setItem('theme', 'light');
+                    btn.textContent = '🌙 Тёмная тема';
+                }
+            });
+        })();
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

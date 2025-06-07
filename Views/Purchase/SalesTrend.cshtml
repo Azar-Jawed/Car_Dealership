@@ -1,0 +1,90 @@
+﻿@model List<Car_Dealership.Models.MonthlySalesViewModel>
+@{
+    ViewData["Title"] = "Динамика продаж по месяцам";
+    var maxMonth = DateTime.Now.ToString("yyyy-MM");
+}
+
+<h1>Динамика продаж по месяцам</h1>
+
+<p>
+    <a asp-action="Index" class="btn btn-secondary mb-3">← К списку купленных авто</a>
+</p>
+
+<form method="get" class="row g-2 align-items-end mb-4">
+    <div class="col-auto">
+        <label class="form-label">Период с</label>
+        <input type="month"
+               name="start"
+               class="form-control"
+               min="2000-01"
+               max="@maxMonth"
+               value="@(ViewBag.Start ?? "")" />
+    </div>
+    <div class="col-auto">
+        <label class="form-label">по</label>
+        <input type="month"
+               name="end"
+               class="form-control"
+               max="@maxMonth"
+               value="@(ViewBag.End ?? "")" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Показать</button>
+    </div>
+</form>
+
+<canvas id="salesTrendChart" width="800" height="300"></canvas>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const monthly = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model));
+        const labels = monthly.map(m => {
+            const d = new Date(m.Year, m.Month - 1);
+            return d.toLocaleString('ru-RU', { month: 'short', year: 'numeric' });
+        });
+        const counts = monthly.map(m => m.Count);
+        const revenues = monthly.map(m => m.TotalRevenue);
+
+        const ctx = document.getElementById('salesTrendChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [
+                    { label: 'Штук продано', data: counts, yAxisID: 'y', tension: 0.3 },
+                    { label: 'Выручка (₽)', data: revenues, yAxisID: 'y1', tension: 0.3 }
+                ]
+            },
+            options: {
+                interaction: { mode: 'index', intersect: false },
+                scales: {
+                    x: { display: true },
+                    y: {
+                        type: 'linear', position: 'left',
+                        title: { display: true, text: 'Штук' }
+                    },
+                    y1: {
+                        type: 'linear', position: 'right',
+                        title: { display: true, text: 'Выручка (₽)' },
+                        grid: { drawOnChartArea: false }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => {
+                                if (ctx.dataset.yAxisID === 'y1') {
+                                    return `${ctx.dataset.label}: ` +
+                                        new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
+                                            .format(ctx.parsed.y);
+                                }
+                                return `${ctx.dataset.label}: ${ctx.parsed.y} шт.`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+}

@@ -1,0 +1,57 @@
+﻿@model IEnumerable<Car_Dealership.Models.Review>
+@{
+    ViewData["Title"] = "Отзывы";
+    var car = (Car_Dealership.Models.Car)ViewBag.Car;
+}
+
+<h3>Отзывы: @car.Manufacturer @car.Model</h3>
+
+<p>
+    <a asp-controller="Car" asp-action="Index"
+       class="btn btn-secondary mb-3">
+        ← К списку автомобилей
+    </a>
+</p>
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Дата</th>
+            <th>Оценка</th>
+            <th>Комментарий</th>
+            <th>Автор</th>
+             @if (User.IsInRole("1") || User.IsInRole("2"))
+                {
+                    <th>Действия</th>
+                }
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in Model)
+        {
+            <tr>
+                <td>@r.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</td>
+                <td>@r.Rating</td>
+                <td>@r.Content</td>
+                <td>@(r.User?.Username ?? "Гость")</td>
+                @if (User.IsInRole("1") || User.IsInRole("2"))
+                {               
+                    <td>
+                        @* Удалить отзыв *@
+                        <form asp-action="Delete" asp-controller="Review"
+                              method="post" class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="id" value="@r.Id" />
+                            <button type="submit"
+                                    class="btn btn-sm btn-danger">
+                                Удалить отзыв
+                            </button>
+                        </form>
+                     </td>
+                }                
+            </tr>
+        }
+    </tbody>
+</table>

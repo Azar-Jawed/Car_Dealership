@@ -1,0 +1,27 @@
+﻿@model List<Car_Dealership.Models.SoldByModelViewModel>
+@{
+    ViewData["Title"] = $"Продано за последние {ViewData["Months"]} мес.";
+}
+<h2>@ViewData["Title"]</h2>
+
+<table class="table table-sm">
+    <thead>
+        <tr>
+            <th>Модель</th>
+            <th>Штук продано</th>
+            <th>Выручка (₽)</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Model)
+        {
+            <tr>
+                <td>@row.Model</td>
+                <td>@row.Count</td>
+                <td>@String.Format("{0:N0}", row.TotalRevenue)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-secondary btn-sm">← К списку купленных авто</a>

@@ -1,0 +1,47 @@
+﻿
+:root {
+    --bs-body-bg: #121212;
+    --bs-body-color: #e0e0e0;
+    --bs-navbar-bg: #1f1f1f;
+    --bs-navbar-color: #e0e0e0;
+    --bs-card-bg: #1f1f1f;
+    --bs-card-color: #e0e0e0;
+    --bs-btn-primary-bg: #333333;
+    --bs-btn-primary-color: #e0e0e0;
+    --bs-btn-secondary-bg: #444444;
+    --bs-btn-secondary-color: #e0e0e0;
+    
+}
+
+body {
+    background-color: var(--bs-body-bg);
+    color: var(--bs-body-color);
+}
+
+.navbar {
+    background-color: var(--bs-navbar-bg) !important;
+}
+
+    .navbar .nav-link {
+        color: var(--bs-navbar-color) !important;
+    }
+
+.card, .table, .form-control {
+    background-color: var(--bs-card-bg);
+    color: var(--bs-card-color);
+}
+
+.btn-primary {
+    background-color: var(--bs-btn-primary-bg);
+    color: var(--bs-btn-primary-color);
+}
+
+.btn-secondary {
+    background-color: var(--bs-btn-secondary-bg);
+    color: var(--bs-btn-secondary-color);
+}
+
+.navbar-brand {
+    color: #40E0D0 !important;
+}
+

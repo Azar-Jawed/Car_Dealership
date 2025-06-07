@@ -1,0 +1,197 @@
+﻿@model Car_Dealership.Models.CarFilterViewModel
+
+@{
+    ViewData["Title"] = "Список автомобилей";
+}
+
+<form method="get" class="mb-3">
+    <div class="row g-2">
+        <div class="col">
+            <input name="manufacturer" class="form-control" placeholder="Производитель" value="@Model.Manufacturer" />
+        </div>
+        <div class="col">
+            <input name="model" class="form-control" placeholder="Модель" value="@Model.Model" />
+        </div>
+        <div class="col">
+            <input name="yearFrom" class="form-control" placeholder="Год от" type="number" value="@Model.YearFrom" />
+        </div>
+        <div class="col">
+            <input name="yearTo" class="form-control" placeholder="Год до" type="number" value="@Model.YearTo" />
+        </div>
+        <div class="col">
+            <input name="priceFrom" class="form-control" placeholder="Цена от" type="number" step="0.01" value="@Model.PriceFrom" />
+        </div>
+        <div class="col">
+            <input name="priceTo" class="form-control" placeholder="Цена до" type="number" step="0.01" value="@Model.PriceTo" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Фильтровать</button>
+        </div>
+
+        @* Кнопка "Очистить фильтр" *@
+        @if (!string.IsNullOrWhiteSpace(Model.Manufacturer)
+             || !string.IsNullOrWhiteSpace(Model.Model)
+             || Model.YearFrom.HasValue
+             || Model.YearTo.HasValue
+             || Model.PriceFrom.HasValue
+             || Model.PriceTo.HasValue)
+        {
+            <div class="col-auto">
+                <a href="@Url.Action("Index", "Car")" class="btn btn-secondary">Очистить</a>
+            </div>
+        }
+    </div>
+</form>
+
+
+
+@* Кнопка "Добавить" только для администратора *@
+@if (User.IsInRole("1"))
+{
+    <a href="@Url.Action("Create", "Car")" class="btn btn-primary mb-3">Добавить автомобиль</a>
+}
+
+
+@if (User.IsInRole("1") || User.IsInRole("2"))
+{
+    <a asp-action="ExportPriceListPdf"
+       asp-route-manufacturer="@Model.Manufacturer"
+       asp-route-model="@Model.Model"
+       asp-route-yearFrom="@Model.YearFrom"
+       asp-route-yearTo="@Model.YearTo"
+       asp-route-priceFrom="@Model.PriceFrom"
+       asp-route-priceTo="@Model.PriceTo"
+       class="btn btn-secondary mb-3">
+        Создать прайс‑лист (PDF)
+    </a>
+}
+
+
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Производитель</th>
+            <th>Модель</th>
+            <th>Мощность (л.с.)</th>
+            <th>Год выпуска</th>
+            <th>Цена (₽)</th>
+
+            <th class="text-center" style="width:140px;">Отзывы</th>
+
+            @* Новая колонка «Покупка» — только для клиентов *@
+            @if (User.IsInRole("3"))
+            {
+                <th class="text-center" style="width:120px;">Покупка</th>
+            }
+
+            @* Эти две колонки только для админа/менеджера *@
+            @if (User.IsInRole("1") || User.IsInRole("2"))
+            {
+                <th class="text-center" style="width:110px;">Уровень доступа</th>
+                <th class="text-center" style="width:160px;">Действия</th>
+            }
+        </tr>
+    </thead>
+
+
+    <tbody>
+
+
+        @* получаем список купленных авто для текущего клиента *@
+        @{
+            var purchased = ViewBag.PurchasedCarIds as List<int> ?? new List<int>();
+        }
+
+@foreach (var car in Model.Cars)
+{
+            <tr>
+                <td>@car.Manufacturer</td>
+                <td>@car.Model</td>
+                <td>@car.HorsePower</td>
+                <td>@car.ProductionYear</td>
+                <td>@String.Format("{0:N0}", car.Price)</td>
+
+                @* 1. Отзывы — всегда показываем *@
+                <td class="text-center">
+                    <a asp-controller="Review" asp-action="Index"
+                       asp-route-carId="@car.Id"
+                       class="btn btn-sm btn-outline-secondary">
+                        Отзывы (@car.Reviews.Count)
+                    </a>
+                    @* кнопку "Оставить отзыв" показываем только если клиент и если он купил эту машину *@
+                    @if (User.IsInRole("3") && purchased.Contains(car.Id))
+                    {
+                        <a asp-controller="Review" asp-action="Create"
+                           asp-route-carId="@car.Id"
+                           class="btn btn-sm btn-outline-primary ms-1">
+                            Оставить отзыв
+                        </a>
+                    }
+                </td>
+
+                @* 2. Покупка — только для клиента *@
+                @if (User.IsInRole("3"))
+                {
+                    <td class="text-center">
+                        <form asp-controller="Purchase" asp-action="Create"
+                              method="post"
+                              onsubmit="return confirm('Вы уверены, что хотите купить этот автомобиль?');"
+                              class="d-inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="carId" value="@car.Id" />
+                            <button type="submit" class="btn btn-sm btn-success">
+                                Купить
+                            </button>
+                        </form>
+                    </td>
+                }
+
+                @* 3. Уровень доступа — только для админа/менеджера *@
+                @if (User.IsInRole("1") || User.IsInRole("2"))
+                {
+                    <td class="text-center">
+                        @if (User.IsInRole("1"))
+                        {
+                            @car.AccessLevel
+                        }
+                        else
+                        {
+                            <form asp-action="SetAccessLevel" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@car.Id" />
+                                @{
+                                    var opt2 = $"<option value=\"2\"{(car.AccessLevel == 2 ? " selected" : "")}>2</option>";
+                                    var opt3 = $"<option value=\"3\"{(car.AccessLevel == 3 ? " selected" : "")}>3</option>";
+                                }
+                                <select name="level"
+                                        class="form-select form-select-sm d-inline w-auto"
+                                        onchange="this.form.submit()">
+                                    @Html.Raw(opt2)
+                                    @Html.Raw(opt3)
+                                </select>
+                            </form>
+                        }
+                    </td>
+
+                    @* 4. Действия (редактировать/удалить) *@
+                    <td class="text-center">
+                        @if (User.IsInRole("1"))
+                        {
+                            <a asp-action="Edit" asp-route-id="@car.Id"
+                               class="btn btn-warning btn-sm me-1">Редактировать</a>
+                        }
+                        <a asp-action="Delete"
+                           asp-route-id="@car.Id"
+                           class="btn btn-danger btn-sm">
+                            Удалить
+                        </a>
+                    </td>
+                }
+            </tr>
+
+}
+</tbody>
+
+</table>
+
+

@@ -1,0 +1,39 @@
+﻿@model Car_Dealership.Models.Purchase
+
+@{
+    ViewData["Title"] = "Редактировать покупку";
+}
+
+<h2>Редактировать покупку #@Model.Id</h2>
+
+<form asp-action="Edit" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="Id" />
+
+    <div class="mb-3">
+        <label class="form-label">Автомобиль</label>
+        <input class="form-control" value="@Model.Car.Manufacturer @Model.Car.Model" disabled />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Покупатель</label>
+        <input class="form-control" value="@Model.User.Username" disabled />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="PurchasedAt" class="form-label">Дата и время покупки</label>
+        <input asp-for="PurchasedAt"
+               class="form-control"
+               type="datetime-local"
+               value="@Model.PurchasedAt.ToString("yyyy-MM-ddTHH:mm")" />
+        <span asp-validation-for="PurchasedAt" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a asp-action="Index" class="btn btn-secondary">Отмена</a>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

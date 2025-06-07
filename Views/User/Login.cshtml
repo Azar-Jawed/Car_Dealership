@@ -1,0 +1,54 @@
+﻿@model Car_Dealership.Models.LoginViewModel
+
+@{
+    ViewData["Title"] = "Вход";
+}
+
+<h1>Вход</h1>
+
+<form asp-action="Login" method="post">
+    <div class="mb-3">
+        <label asp-for="Username" class="form-label">Логин</label>
+        <input asp-for="Username" class="form-control" />
+        <span asp-validation-for="Username" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Password" class="form-label">Пароль</label>
+        <div class="input-group">
+            <input asp-for="Password"
+                   type="password"
+                   class="form-control"
+                   id="passwordInput"
+                   autocomplete="current-password" />
+            <button class="btn btn-outline-secondary"
+                    type="button"
+                    id="togglePasswordBtn"
+                    tabindex="-1">
+                👁️
+            </button>
+        </div>
+        <span asp-validation-for="Password" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Войти</button>
+    <a asp-action="Register" class="btn btn-secondary ms-2">Зарегистрироваться</a>
+</form>
+
+
+@section Scripts {
+    <script>
+        // находим кнопку и поле
+        const pwdInput = document.getElementById('passwordInput');
+        const toggleBtn = document.getElementById('togglePasswordBtn');
+
+        toggleBtn.addEventListener('click', () => {
+            // если сейчас пароль скрыт — показываем, иначе прячем
+            const isPassword = pwdInput.type === 'password';
+            pwdInput.type = isPassword ? 'text' : 'password';
+            // меняем иконку
+            toggleBtn.textContent = isPassword ? '🙈' : '👁️';
+        });
+    </script>
+}
+

@@ -1,0 +1,91 @@
+﻿@model List<Car_Dealership.Models.RevenueByManufacturerViewModel>
+@{
+    ViewData["Title"] = "Выручка по производителям";
+}
+
+<h1>Выручка по производителям</h1>
+
+<p>
+    <a asp-action="Index" class="btn btn-secondary mb-3">
+        ← К списку купленных авто
+    </a>
+</p>
+
+<div class="row">
+    <div class="col-md-6">
+        <canvas id="revByManChart"></canvas>
+    </div>
+    <div class="col-md-6">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Производитель</th>
+                    <th class="text-end">Выручка (₽)</th>
+                    <th class="text-center">Штук</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var r in Model)
+                {
+                    <tr>
+                        <td>@r.Manufacturer</td>
+                        <td class="text-end">@r.TotalRevenue.ToString("N0")</td>
+                        <td class="text-center">@r.Count</td>
+                    </tr>
+                }
+            </tbody>            
+            <tfoot>                
+                <tr class="fw-bold">                    
+                    <td>Итого</td>                    
+                    <td class="text-end">
+                                           @Model.Sum(r => r.TotalRevenue).ToString("N0")                        
+                    </td>                    
+                    <td class="text-center">
+                                           @Model.Sum(r => r.Count)                        
+                    </td>                    
+                </tr>                
+            </tfoot>
+
+
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // подготовим данные
+        const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(r => r.Manufacturer)));
+        const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select(r => r.TotalRevenue)));
+        const ctx = document.getElementById('revByManChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Выручка (₽)',
+                    data: data,
+                    backgroundColor: 'rgba(40, 167, 69, 0.5)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: v => new Intl.NumberFormat('ru-RU').format(v) }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' })
+                                .format(ctx.parsed.y)
+                        }
+                    }
+                }
+            }
+        }); 
+    </script>
+}

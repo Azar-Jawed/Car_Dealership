@@ -1,0 +1,42 @@
+﻿@model List<Car_Dealership.Models.Car>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Прайс‑лист</title>
+    <style>
+        table { width:100%; border-collapse: collapse; }
+        th, td { border: 1px solid #333; padding: 4px; font-size: 10pt; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+    <h2>Прайс‑лист автомобилей</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Производитель</th>
+                <th>Модель</th>
+                <th>Мощность</th>
+                <th>Год выпуска</th>
+                <th>Цена (₽)</th>
+                <th>Отзывы</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach(var c in Model)
+        {
+            <tr>
+                <td>@c.Manufacturer</td>
+                <td>@c.Model</td>
+                <td>@c.HorsePower</td>
+                <td>@c.ProductionYear</td>
+                <td>@String.Format("{0:N0}", c.Price)</td>
+                <td>@c.Reviews.Count</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</body>
+</html>

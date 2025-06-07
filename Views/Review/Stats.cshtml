@@ -1,0 +1,123 @@
+﻿@model Car_Dealership.Models.ReviewStatsViewModel
+@{
+    ViewData["Title"] = "Статистика отзывов";
+}
+
+<h1>Статистика отзывов</h1>
+<p>
+    <a asp-controller="Car"
+       asp-action="Index"
+       class="btn btn-secondary mb-3">
+        ← К списку автомобилей
+    </a>
+</p>
+
+<h3>Автомобиль с наивысшим рейтингом</h3>
+@if (Model.BestByHighestRating != null)
+{
+    var car = Model.BestByHighestRating;
+    var topScore = car.Reviews.Max(r => r.Rating);
+    <p>
+        <strong>@car.Manufacturer @car.Model</strong>
+        — максимальная оценка @topScore
+        (из @car.Reviews.Count отзывов)
+    </p>
+}
+
+
+<h3>Самый народный автомобиль</h3>
+@if (Model.MostReviewed != null)
+{
+    <p>
+        <strong>@Model.MostReviewed.Manufacturer @Model.MostReviewed.Model</strong>
+        — @Model.MostReviewed.Reviews.Count отзывов
+    </p>
+}
+
+<h3>Автомобиль с лучшим средним рейтингом (минимум 3 отзыва)</h3>
+@if (Model.HighestRated != null)
+{
+    <p>
+        <strong>@Model.HighestRated.Manufacturer @Model.HighestRated.Model</strong>
+        — средний рейтинг
+        @String.Format("{0:F2}", Model.HighestRated.Reviews.Average(r => r.Rating))
+    </p>
+}
+
+<h3>Топ-5 по количеству отзывов</h3>
+<ol>
+    @foreach (var car in Model.TopByCount)
+    {
+        <li>
+            @car.Manufacturer @car.Model — @car.Reviews.Count отзывов
+        </li>
+    }
+</ol>
+
+<h3>Топ-5 по среднему рейтингу (≥ 3 отзыва)</h3>
+<ol>
+    @foreach (var car in Model.TopByRating)
+    {
+        <li>
+            @car.Manufacturer @car.Model —
+            @String.Format("{0:F2}", car.Reviews.Average(r => r.Rating))
+            (@car.Reviews.Count отзыва)
+        </li>
+    }
+</ol>
+
+@* Секция «Распределение оценок» только для админа и менеджера *@
+@if (User.IsInRole("1") || User.IsInRole("2"))
+{
+    <h3>Распределение оценок</h3>
+    <canvas id="ratingChart" width="600" height="300"></canvas>
+
+    @section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ratings = @Html.Raw(
+         System.Text.Json.JsonSerializer.Serialize(
+         Model.RatingDistribution.Select(b => b.Rating)
+         )
+         );
+        const counts = @Html.Raw(
+          System.Text.Json.JsonSerializer.Serialize(
+          Model.RatingDistribution.Select(b => b.Count)
+          )
+          );
+        const total = counts.reduce((sum, v) => sum + v, 0);
+        const percents = counts.map(c => Math.round(c * 1000 / total) / 10);
+
+        const ctx = document.getElementById('ratingChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ratings.map(r => '★' + r),
+                datasets: [{
+                    label: 'Процент отзывов (%)',
+                    data: percents,
+                    backgroundColor: 'rgba(0, 123, 255, 0.5)',
+                    borderColor: 'rgba(0, 123, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { callback: value => value + '%' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => `${ctx.parsed.y}% (${counts[ctx.dataIndex]} шт.)`
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    }
+}
+

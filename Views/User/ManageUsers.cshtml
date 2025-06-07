@@ -1,0 +1,57 @@
+﻿@model IEnumerable<Car_Dealership.Models.UserViewModel>
+
+@{
+    ViewData["Title"] = "Управление пользователями";
+}
+
+<div class="mb-3">
+    <a asp-controller="Car"
+       asp-action="Index"
+       class="btn btn-secondary">
+        ← К списку автомобилей
+    </a>
+</div>
+
+<h2>@ViewData["Title"]</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Имя пользователя</th>
+            <th>Роль</th>
+            <th>Изменить роль</th>
+            <th>Удалить</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in Model)
+        {
+            <tr>
+                <td>@user.Username</td>
+                <td>@user.Role</td>
+                <td>
+                    @if (user.Role == "Менеджер" || user.Role == "Клиент")
+                    {
+                        <a asp-action="ChangeRole"
+                           asp-route-id="@user.Id"
+                           class="btn btn-warning">
+                            Изменить роль
+                        </a>
+                    }
+                </td>
+                <td>
+                    @* Показываем кнопку Удалить только если это не админ *@
+                    @if (user.Role != "Администратор")
+                    {
+                        <a asp-action="Delete"
+                           asp-route-id="@user.Id"
+                           class="btn btn-danger"
+                           onclick="return confirm('Вы уверены, что хотите удалить этого пользователя?');">
+                            Удалить
+                        </a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

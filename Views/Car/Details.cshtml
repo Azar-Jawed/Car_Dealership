@@ -1,0 +1,54 @@
+﻿@model Car_Dealership.Models.Car
+
+@{
+    ViewData["Title"] = "Информация об автомобиле";
+}
+
+<h1>Детали</h1>
+
+<div>
+    <h4>Автомобиль</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            Производитель
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Manufacturer)
+        </dd>
+        <dt class="col-sm-2">
+            Модель
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Model)
+        </dd>
+        <dt class="col-sm-2">
+            Мощность (л.с.)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.HorsePower)
+        </dd>
+        <dt class="col-sm-2">
+            Год выпуска
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ProductionYear)
+        </dd>
+        <dt class="col-sm-2">
+            Цена
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+        <dt class="col-sm-2">
+            Уровень доступа
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.AccessLevel)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-primary">Редактировать</a>
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку</a>
+</div>
